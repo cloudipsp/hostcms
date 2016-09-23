@@ -14,7 +14,7 @@
 		}	
 		if (isset($_POST['order_status']) and $_POST['order_status'] == 'approved')
 		{
-            $order_id = explode('#', $_POST['order_id']); // Номер заказа, переданный системой после оплаты
+            $order_id = explode('#', $_POST['order_id']); // Номер заказа
             $oShop_Order = Core_Entity::factory('Shop_Order')->find($order_id[0]);
             if (!is_null($oShop_Order->id))
             {
