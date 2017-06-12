@@ -114,8 +114,19 @@
 				</script>
 				</form>';
 			}else{
-				$formFields['amount'] = $this->getSumWithCoeff();
+				$formFields['amount'] = round($this->getSumWithCoeff()*100);
 				$formFields['signature'] = FondyForm::getSignature($formFields,$this->_fondy_secret_key);
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, 'https://api.fondy.eu/api/checkout/url/');
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('request'=>$formFields)));
+				$result = json_decode(curl_exec($ch));
+				if ($result->response->response_status == 'failure'){
+					echo $result->response->error_message;
+					exit;
+				}
 				echo '<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
 				<script src="https://api.fondy.eu/static_common/v1/checkout/ipsp.js"></script>
 				<div id="checkout">
@@ -174,16 +185,7 @@
 				this.loadUrl(url);
 				});
 				};
-				var button = $ipsp.get("button");
-				button.setMerchantId('.$formFields['merchant_id'].');
-				button.setAmount('.$formFields['amount'].', "'.$formFields['currency'].'", true);
-				button.setHost("api.fondy.eu");
-				button.addParam("order_desc","'.$formFields['order_desc'].'");
-				button.addParam("order_id","'.$formFields['order_id'].'");
-				button.addParam("lang","'.$formFields['lang'].'");
-				button.addParam("server_callback_url","'.$formFields['server_callback_url'].'");
-				button.setResponseUrl("'.$formFields['response_url'].'");
-				checkoutInit(button.getUrl());
+				checkoutInit("' . $result->response->checkout_url . '");
 				</script>';
 			}
 		}
